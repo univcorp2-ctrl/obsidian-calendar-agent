@@ -1,0 +1,75 @@
+openapi: 3.1.0
+info:
+  title: Obsidian Calendar Agent API
+  version: 0.1.0
+  description: API for syncing Obsidian tasks to Google Calendar and sending Telegram daily digests.
+servers:
+  - url: https://YOUR_PUBLIC_DOMAIN
+security:
+  - ApiKeyAuth: []
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Check API health
+      responses:
+        '200':
+          description: OK
+  /sync/today:
+    post:
+      operationId: syncObsidianTasksToCalendar
+      summary: Sync Obsidian tasks to Google Calendar hourly blocks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  description: Target date in YYYY-MM-DD. Omit for today.
+                dry_run:
+                  type: boolean
+                  description: If true, return planned blocks without writing to Google Calendar.
+              required:
+                - dry_run
+      responses:
+        '200':
+          description: Sync result
+  /digest/today:
+    get:
+      operationId: getTodayDigest
+      summary: Build today's calendar digest text without sending it
+      parameters:
+        - in: query
+          name: date
+          schema:
+            type: string
+          description: Target date in YYYY-MM-DD. Omit for today.
+      responses:
+        '200':
+          description: Digest text
+  /telegram/send-today:
+    post:
+      operationId: sendTodayDigestToTelegram
+      summary: Send today's Google Calendar digest to Telegram
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  description: Target date in YYYY-MM-DD. Omit for today.
+      responses:
+        '200':
+          description: Telegram send result
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
