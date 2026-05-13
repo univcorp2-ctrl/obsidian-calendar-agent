@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI, Header, HTTPException
@@ -29,10 +30,14 @@ class DigestRequest(BaseModel):
     date: Optional[str] = None
 
 
+def _now_date() -> date:
+    return datetime.now(ZoneInfo(settings.timezone)).date()
+
+
 def _target_date(value: Optional[str]) -> date:
     if value:
         return datetime.strptime(value, "%Y-%m-%d").date()
-    return datetime.now().date()
+    return _now_date()
 
 
 def require_api_key(x_api_key: str = Header(default="")) -> None:
@@ -60,15 +65,23 @@ async def telegram_today(request: DigestRequest) -> dict:
     return await orchestrator.send_today_digest(_target_date(request.date))
 
 
+async def scheduled_telegram_digest() -> None:
+    await orchestrator.send_today_digest(_now_date())
+
+
+def scheduled_calendar_sync() -> None:
+    orchestrator.sync_day(_now_date(), dry_run=False)
+
+
 @app.on_event("startup")
 async def start_scheduler() -> None:
     global scheduler
     if not settings.enable_scheduler:
         return
     scheduler = AsyncIOScheduler(timezone=settings.timezone)
-    scheduler.add_job(lambda: orchestrator.sync_day(datetime.now().date(), dry_run=False), "interval", hours=1)
+    scheduler.add_job(scheduled_calendar_sync, "interval", hours=1)
     hour, minute = [int(part) for part in settings.daily_digest_time.split(":", 1)]
-    scheduler.add_job(lambda: orchestrator.send_today_digest(datetime.now().date()), "cron", hour=hour, minute=minute)
+    scheduler.add_job(scheduled_telegram_digest, "cron", hour=hour, minute=minute)
     scheduler.start()
 
 
