@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from obsidian_calendar_agent.config import Settings
 from obsidian_calendar_agent.models import Task
@@ -56,11 +57,12 @@ def test_planner_splits_into_hourly_blocks(tmp_path):
 
 def test_planner_respects_busy_intervals(tmp_path):
     planner = HourlyPlannerAgent(settings(tmp_path))
-    busy_start = blocks_start = planner.tz.localize if False else None
-    from datetime import datetime
-    from zoneinfo import ZoneInfo
-
-    busy = [(datetime(2026, 5, 13, 9, 0, tzinfo=ZoneInfo("Asia/Tokyo")), datetime(2026, 5, 13, 10, 0, tzinfo=ZoneInfo("Asia/Tokyo")))]
+    busy = [
+        (
+            datetime(2026, 5, 13, 9, 0, tzinfo=ZoneInfo("Asia/Tokyo")),
+            datetime(2026, 5, 13, 10, 0, tzinfo=ZoneInfo("Asia/Tokyo")),
+        )
+    ]
     blocks = planner.plan([task("a", "集中作業", 60)], date(2026, 5, 13), busy=busy)
 
     assert blocks[0].start.hour == 10
