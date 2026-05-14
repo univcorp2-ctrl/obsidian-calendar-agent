@@ -1,0 +1,86 @@
+{
+  "source": "10年ロードマップ画像。ユーザー提供画像から手入力で構造化。",
+  "currency_basis": "金額系は原則として億円。月自由資金のみ万円/月。",
+  "milestones": [
+    {
+      "label": "現在地",
+      "date": "2026-05-11",
+      "age": 45,
+      "targets": {
+        "net_assets": {"label": "純資産", "low": 0.6, "high": 0.8, "unit": "億円"},
+        "cash": {"label": "現金", "low": 0.2, "high": 0.2, "unit": "億円"},
+        "rooms": {"label": "保有室数", "low": 26, "high": 26, "unit": "室"},
+        "monthly_free_cash": {"label": "月自由資金", "low": 50, "high": 80, "unit": "万円/月"},
+        "annual_purchase": {"label": "年間買付額", "low": 2, "high": 3, "unit": "億円/年"},
+        "annual_sales": {"label": "年間売却額", "low": 0.5, "high": 1.0, "unit": "億円/年"},
+        "brokerage_sales": {"label": "仲介売上", "low": 0.3, "high": 0.8, "unit": "億円/年"},
+        "annual_profit": {"label": "年間利益", "low": 0.3, "high": 0.8, "unit": "億円/年"},
+        "required_borrowing": {"label": "必要借入実行額", "low": 1.6, "high": 3.0, "unit": "億円/年"}
+      }
+    },
+    {
+      "label": "2026年度末",
+      "date": "2026-12-31",
+      "age": 45,
+      "targets": {
+        "net_assets": {"label": "純資産", "low": 1.5, "high": 2.5, "unit": "億円"},
+        "cash": {"label": "現金", "low": 0.8, "high": 1.5, "unit": "億円"},
+        "rooms": {"label": "保有室数", "low": 70, "high": 120, "unit": "室"},
+        "monthly_free_cash": {"label": "月自由資金", "low": 80, "high": 150, "unit": "万円/月"},
+        "annual_purchase": {"label": "年間買付額", "low": 6, "high": 10, "unit": "億円/年"},
+        "annual_sales": {"label": "年間売却額", "low": 1, "high": 2, "unit": "億円/年"},
+        "brokerage_sales": {"label": "仲介売上", "low": 0.6, "high": 1.2, "unit": "億円/年"},
+        "annual_profit": {"label": "年間利益", "low": 1.0, "high": 1.8, "unit": "億円/年"},
+        "required_borrowing": {"label": "必要借入実行額", "low": 4.8, "high": 8.3, "unit": "億円/年"}
+      }
+    },
+    {
+      "label": "2028年末",
+      "date": "2028-12-31",
+      "age": 47,
+      "targets": {
+        "net_assets": {"label": "純資産", "low": 6, "high": 7, "unit": "億円"},
+        "cash": {"label": "現金", "low": 3.0, "high": 4.5, "unit": "億円"},
+        "rooms": {"label": "保有室数", "low": 300, "high": 400, "unit": "室"},
+        "monthly_free_cash": {"label": "月自由資金", "low": 300, "high": 500, "unit": "万円/月"},
+        "annual_purchase": {"label": "年間買付額", "low": 12, "high": 18, "unit": "億円/年"},
+        "annual_sales": {"label": "年間売却額", "low": 5, "high": 8, "unit": "億円/年"},
+        "brokerage_sales": {"label": "仲介売上", "low": 1.5, "high": 2.5, "unit": "億円/年"},
+        "annual_profit": {"label": "年間利益", "low": 2.0, "high": 3.0, "unit": "億円/年"},
+        "required_borrowing": {"label": "必要借入実行額", "low": 9.6, "high": 16.5, "unit": "億円/年"}
+      }
+    },
+    {
+      "label": "2029年末",
+      "date": "2029-12-31",
+      "age": 48,
+      "targets": {
+        "net_assets": {"label": "純資産", "low": 10, "high": 12, "unit": "億円"},
+        "cash": {"label": "現金", "low": 5.0, "high": 7.5, "unit": "億円"},
+        "rooms": {"label": "保有室数", "low": 450, "high": 600, "unit": "室"},
+        "monthly_free_cash": {"label": "月自由資金", "low": 500, "high": 800, "unit": "万円/月"},
+        "annual_purchase": {"label": "年間買付額", "low": 18, "high": 25, "unit": "億円/年"},
+        "annual_sales": {"label": "年間売却額", "low": 8, "high": 12, "unit": "億円/年"},
+        "brokerage_sales": {"label": "仲介売上", "low": 2.5, "high": 4.0, "unit": "億円/年"},
+        "annual_profit": {"label": "年間利益", "low": 3.5, "high": 5.0, "unit": "億円/年"},
+        "required_borrowing": {"label": "必要借入実行額", "low": 14.4, "high": 25.0, "unit": "億円/年"}
+      }
+    },
+    {
+      "label": "2035年末",
+      "date": "2035-12-31",
+      "age": 54,
+      "targets": {
+        "net_assets": {"label": "純資産", "low": 200, "high": 200, "unit": "億円"},
+        "cash": {"label": "現金", "low": 30, "high": 50, "unit": "億円"},
+        "rooms": {"label": "保有室数", "low": 3500, "high": 4500, "unit": "室"},
+        "monthly_free_cash": {"label": "月自由資金", "low": 8000, "high": 15000, "unit": "万円/月"},
+        "annual_purchase": {"label": "年間買付額", "low": 70, "high": 100, "unit": "億円/年"},
+        "annual_sales": {"label": "年間売却額", "low": 20, "high": 30, "unit": "億円/年"},
+        "brokerage_sales": {"label": "仲介売上", "low": 8, "high": 12, "unit": "億円/年"},
+        "annual_profit": {"label": "年間利益", "low": 25, "high": 40, "unit": "億円/年"},
+        "required_borrowing": {"label": "必要借入実行額", "low": 40, "high": 60, "unit": "億円/年"}
+      }
+    }
+  ]
+}
