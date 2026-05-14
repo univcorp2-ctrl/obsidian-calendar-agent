@@ -1,5 +1,7 @@
 # Obsidian Calendar Agent
 
+[![CI](https://github.com/univcorp2-ctrl/obsidian-calendar-agent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/univcorp2-ctrl/obsidian-calendar-agent/actions/workflows/ci.yml)
+
 Obsidian の Daily Note / TODO リストを読み取り、タスクを 1 時間単位の Google Calendar イベントへ自動登録し、毎朝 Telegram に今日の予定を配信する Python/FastAPI アプリです。
 
 ## できること
@@ -98,6 +100,13 @@ DAILY_DIGEST_TIME=07:30
 
 ## 使い方
 
+### 外部APIなしの確認
+
+```bash
+python scripts/smoke_test.py
+pytest -q
+```
+
 ### ドライラン
 
 ```bash
@@ -124,7 +133,7 @@ uvicorn obsidian_calendar_agent.app:app --host 0.0.0.0 --port 8000
 
 ## Custom GPT 連携
 
-1. この API を HTTPS で公開します。例: Cloud Run / Render / Railway / VPS + Nginx など。
+1. この API を HTTPS で公開します。例: Cloud Run / Render / Railway / VPS など。
 2. `openapi/gpt-actions.yaml` の `servers.url` を公開 URL に変更します。
 3. GPT Builder の Actions に OpenAPI schema を貼り付けます。
 4. Authentication は API Key を選び、Header 名を `X-API-Key` にします。
