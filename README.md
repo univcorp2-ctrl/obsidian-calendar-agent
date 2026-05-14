@@ -1,8 +1,11 @@
 # Obsidian Calendar Agent
 
 [![CI](https://github.com/univcorp2-ctrl/obsidian-calendar-agent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/univcorp2-ctrl/obsidian-calendar-agent/actions/workflows/ci.yml)
+[![CD Smoke](https://github.com/univcorp2-ctrl/obsidian-calendar-agent/actions/workflows/cd.yml/badge.svg?branch=main)](https://github.com/univcorp2-ctrl/obsidian-calendar-agent/actions/workflows/cd.yml)
 
 Obsidian の Daily Note / TODO リストを読み取り、タスクを 1 時間単位の Google Calendar イベントへ自動登録し、毎朝 Telegram に今日の予定を配信する Python/FastAPI アプリです。
+
+加えて、10年ロードマップから今週・来週・再来週・4週間後の金曜日目標数字を逆算し、ObsidianのDaily Noteへ自動書き込みするCLIを備えています。
 
 ## できること
 
@@ -12,7 +15,48 @@ Obsidian の Daily Note / TODO リストを読み取り、タスクを 1 時間�
 - `⏱ 2h` / `duration: 90m` などを読み、1 時間単位に分解
 - Google Calendar の既存予定を避けて登録
 - Telegram に今日の予定を自動配信
+- 10年ロードマップから週次金曜目標を逆算
+- Local CLIのCodex / Claudeによるロードマップレビュー
 - Custom GPT Actions から `/sync/today` などを呼び出し可能
+
+## 外部APIなしの確認
+
+```bash
+python scripts/smoke_test.py
+pytest -q
+python -m obsidian_calendar_agent.cli roadmap-weekly --start-date 2026-05-11 --weeks 4 --json
+```
+
+またはまとめて:
+
+```bash
+bash scripts/verify_all.sh
+```
+
+## 10年ロードマップから週次目標を作る
+
+Markdownで確認:
+
+```bash
+python -m obsidian_calendar_agent.cli roadmap-weekly --start-date 2026-05-11 --weeks 4
+```
+
+Obsidianへ書き込み:
+
+```bash
+python -m obsidian_calendar_agent.cli roadmap-weekly --start-date 2026-05-11 --weeks 4 --write
+```
+
+Claude / Codex CLIでレビューしてから書き込み:
+
+```bash
+python -m obsidian_calendar_agent.cli roadmap-weekly \
+  --start-date 2026-05-11 \
+  --weeks 4 \
+  --review \
+  --review-command 'claude --print < {input}' \
+  --write
+```
 
 ## 全体構成
 
@@ -27,6 +71,14 @@ Google Calendar Writer Agent
 Telegram Daily Digest Agent
         ↑
 Custom GPT Actions → FastAPI API
+
+10-year Roadmap JSON
+        ↓
+Roadmap Reverse Planner
+        ↓
+Weekly Friday Target Writer
+        ↓
+Local CLI AI Review: Claude / Codex
 ```
 
 ## 推奨タスク記法
@@ -44,16 +96,7 @@ Daily Note 例: `Daily/2026-05-13.md`
 - [ ] カレンダー登録しないタスク #gcal-skip
 ```
 
-TODO ファイル例: `TODO.md`
-
-```md
-- [ ] 契約書レビュー 📅 2026-05-13 ⏱ 2h #p1
-- [ ] 今日やる細かい雑務 #today ⏱ 1h
-```
-
 ## セットアップ
-
-### 1. Python 環境
 
 ```bash
 python -m venv .venv
@@ -62,23 +105,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-### 2. Google Calendar API
-
-Google Cloud Console で Calendar API を有効化し、OAuth クライアントの `credentials.json` を作成してプロジェクト直下へ置きます。
-
-初回だけ以下を実行して OAuth 認可を完了します。
-
-```bash
-python -m obsidian_calendar_agent.cli auth-google
-```
-
-生成された `token.json` は秘密情報なので Git に入れないでください。
-
-### 3. Telegram Bot
-
-BotFather で Bot を作り、`.env` に `TELEGRAM_BOT_TOKEN` と `TELEGRAM_CHAT_ID` を設定します。
-
-### 4. .env 設定
+`.env` の例:
 
 ```env
 OBSIDIAN_VAULT_PATH=/absolute/path/to/your/ObsidianVault
@@ -98,70 +125,65 @@ ENABLE_SCHEDULER=false
 DAILY_DIGEST_TIME=07:30
 ```
 
-## 使い方
+## Google Calendar API
 
-### 外部APIなしの確認
+Google Cloud Console で Calendar API を有効化し、OAuth クライアントの `credentials.json` を作成してプロジェクト直下へ置きます。
+
+初回だけ以下を実行して OAuth 認可を完了します。
 
 ```bash
-python scripts/smoke_test.py
-pytest -q
+python -m obsidian_calendar_agent.cli auth-google
 ```
 
-### ドライラン
+生成された `token.json` は秘密情報なので Git に入れないでください。
+
+## 使い方
+
+ドライラン:
 
 ```bash
 python -m obsidian_calendar_agent.cli sync --date 2026-05-13 --dry-run
 ```
 
-### Google Calendar に登録
+Google Calendar に登録:
 
 ```bash
 python -m obsidian_calendar_agent.cli sync --date 2026-05-13
 ```
 
-### Telegram に今日の予定を送信
+Telegram に今日の予定を送信:
 
 ```bash
 python -m obsidian_calendar_agent.cli telegram-today --date 2026-05-13
 ```
 
-### API サーバー起動
+API サーバー起動:
 
 ```bash
 uvicorn obsidian_calendar_agent.app:app --host 0.0.0.0 --port 8000
 ```
 
-## Custom GPT 連携
+## CI/CD
 
-1. この API を HTTPS で公開します。例: Cloud Run / Render / Railway / VPS など。
-2. `openapi/gpt-actions.yaml` の `servers.url` を公開 URL に変更します。
-3. GPT Builder の Actions に OpenAPI schema を貼り付けます。
-4. Authentication は API Key を選び、Header 名を `X-API-Key` にします。
-5. `.env` の `AGENT_API_KEY` と同じ値を GPT Actions 側に登録します。
-
-GPT に依頼する例:
-
-```text
-今日のObsidianタスクをGoogleカレンダーに1時間単位で登録して。まずはドライランで確認して。
-```
-
-## 自動実行
-
-`.env` の `ENABLE_SCHEDULER=true` にすると、API 起動中に以下を自動実行します。
-
-- 毎時: 今日の Obsidian タスクを Google Calendar に同期
-- 毎日 `DAILY_DIGEST_TIME`: Telegram に今日の予定を送信
-
-本番では systemd / Docker / Cloud Run Jobs / cron など、落ちても復帰する仕組みと組み合わせてください。
-
-## テスト
+CI:
 
 ```bash
-pytest
+bash scripts/verify_all.sh
 ```
 
-## 注意事項
+失敗時のローカル修正ループ:
 
-- Google Calendar へ登録済みのイベントは、タスクのハッシュから生成したイベント ID で重複登録を防ぎます。
-- Telegram Bot のメッセージは通常チャットと同じエンドツーエンド暗号ではないため、機密情報を送らない運用にしてください。
-- Obsidian Vault をクラウド同期している場合、同期競合や未同期ファイルに注意してください。
+```bash
+export REPAIR_COMMAND='claude --print < {log}'
+bash scripts/ci_repair_loop.sh
+```
+
+CD SmokeではDocker buildとAPI `/health` の確認を行います。
+
+## 詳細ドキュメント
+
+- `docs/requirements.md`
+- `docs/architecture.md`
+- `docs/roadmap-weekly-targets.md`
+- `docs/ci-cd.md`
+- `docs/plugin-recommendations.md`
