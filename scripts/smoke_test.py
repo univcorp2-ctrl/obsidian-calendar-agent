@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 import json
+import sys
 from datetime import date
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+# Allow both `python scripts/smoke_test.py` and `python -m scripts.smoke_test`.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from obsidian_calendar_agent.config import Settings
 from obsidian_calendar_agent.parser import ObsidianTaskParserAgent
