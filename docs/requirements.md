@@ -6,17 +6,21 @@ Obsidian を中心にした、個人用の完全自動タスクCRMを作る。
 
 ユーザーは Obsidian の Inbox / Daily Note / Weekly Note に自然にメモを書く。システムはそれを読み取り、タスク化、分類、専門エージェント割当、WBS化、進捗計算、Google Calendar登録、Telegram配信までを自動で行う。
 
+さらに、10年後の大目標数字から逆算し、今週金曜日、来週金曜日、再来週金曜日、4週間後金曜日の目標数字を自動生成し、ObsidianのDaily NoteまたはAI-CRM領域へ書き込む。
+
 ## 2. 目標
 
 - Inbox に雑に投げ込んだメモを自動で拾う
 - 開発、調査、資料作成、事務、連絡などに分類する
 - 分類結果に応じて専門エージェントへ依頼を作る
 - 金曜日時点の Daily Note / Weekly Note に書いた週次目標をWBSへ分解する
+- 10年ロードマップから逆算した週次KPIを自動生成する
 - WBSの完了状況から進捗率を自動計算する
 - Daily Note / Weekly Note のAI管理欄を自動更新する
 - Google Calendarへ1時間単位の作業予定を登録する
 - Telegramへ毎朝・毎夕・毎週の進捗レポートを送る
 - 秘書エージェントが、今の状況、遅延リスク、今日やるべきことを助言する
+- CI/CDでテストを自動化し、ローカルCLIによる修正ループを用意する
 
 ## 3. ユーザーの使い方
 
@@ -31,15 +35,6 @@ Obsidian を中心にした、個人用の完全自動タスクCRMを作る。
 - 金曜日までに営業資料を完成させる。
 ```
 
-システムは自動で以下のように判断する。
-
-| 入力 | 分類 | 割当先 |
-|---|---|---|
-| 予約管理アプリを作りたい | development | 開発エージェント |
-| 競合サービス料金調査 | research | 調査エージェント |
-| 田中さんに候補日を送る | communication | 秘書 / 連絡エージェント |
-| 営業資料完成 | writing | 資料作成エージェント |
-
 ### 3.2 週次目標を書く
 
 金曜日または週次ノートに、ユーザーは大きい目標だけを書く。
@@ -51,40 +46,41 @@ Obsidian を中心にした、個人用の完全自動タスクCRMを作る。
 - 営業資料を完成させる
 ```
 
-システムはこれをWBSへ分解する。
+### 3.3 10年ロードマップから週次数字を作る
+
+ユーザーが設定した10年後の大目標から、システムは今月の金曜日ごとの目標数字を自動生成する。
+
+対象指標:
+
+- 純資産
+- 現金
+- 保有室数
+- 月自由資金
+- 年間買付額
+- 年間売却額
+- 仲介売上
+- 年間利益
+- 必要借入実行額
+
+生成例:
 
 ```md
-## WBS
+<!-- AI_ROADMAP_TARGETS:START -->
+## 10年ロードマップ逆算: 週次目標数字
 
-### 新しい予約管理アプリのMVPを作る
-- [ ] 要件定義を作る #dev #wbs
-- [ ] 画面一覧を作る #dev #wbs
-- [ ] DB設計を作る #dev #wbs
-- [ ] API設計を作る #dev #wbs
-- [ ] MVPを実装する #dev #wbs
-- [ ] テストを書く #dev #wbs
-- [ ] 動作確認する #dev #wbs
+### 今週: 2026-05-15 金曜日時点
+
+| 指標 | 目標数字 |
+|---|---:|
+| 純資産 | 0.62〜0.83億円 |
+| 現金 | 0.21〜0.22億円 |
+| 保有室数 | 27〜28室 |
+
+#### 今週の行動KPI候補
+- [ ] 候補物件・融資・売却案件を棚卸しする #roadmap #kpi
+- [ ] 実績値をDaily/Weekly Noteに追記し、来週目標を再計算する #roadmap #review
+<!-- AI_ROADMAP_TARGETS:END -->
 ```
-
-### 3.3 進捗が自動更新される
-
-Daily Note / Weekly Note に以下のようなAI管理欄が作られる。
-
-```md
-<!-- AI_TASK_CRM:START -->
-## Weekly Progress
-
-- 予約管理アプリMVP: 43% 完了
-- 競合調査: 25% 完了
-- 営業資料: 80% 完了
-
-## AI Secretary Advice
-
-開発MVPはAPI設計とテストが未着手です。今日の午前にAPI設計を1時間確保するのがおすすめです。
-<!-- AI_TASK_CRM:END -->
-```
-
-AIは marker で囲まれた範囲だけを更新し、ユーザーが自由に書いた文章は壊さない。
 
 ## 4. 機能要件
 
@@ -111,29 +107,9 @@ AIは marker で囲まれた範囲だけを更新し、ユーザーが自由に�
 
 分類結果に応じて、`AI-CRM/agent_outbox/` に依頼書Markdownを作る。
 
-```text
-AI-CRM/agent_outbox/development/task_001.md
-AI-CRM/agent_outbox/research/task_002.md
-AI-CRM/agent_outbox/communication/task_003.md
-```
-
-初期版では、Codex / Claude Code へ直接実行させず、まず依頼書生成までにする。これにより誤実行を防ぎ、人間が内容を確認できる。
-
 ### FR-004 WBS生成
 
 大きな目標を、実行可能な子タスクに分解する。
-
-WBS項目は以下の情報を持つ。
-
-- 親目標ID
-- 子タスクID
-- タイトル
-- 完了条件
-- 成果物
-- 推定工数
-- 優先度
-- 担当エージェント
-- ステータス
 
 ### FR-005 進捗率計算
 
@@ -141,12 +117,6 @@ WBS項目は以下の情報を持つ。
 
 ```text
 進捗率 = 完了済み子タスク数 / 全子タスク数 * 100
-```
-
-将来版。
-
-```text
-進捗率 = 完了済み見積時間 / 全見積時間 * 100
 ```
 
 ### FR-006 Obsidian更新
@@ -172,19 +142,6 @@ WBS項目は以下の情報を持つ。
 - 遅れているタスク
 - 秘書コメント
 
-毎夕送る内容。
-
-- 今日完了したタスク
-- 未完了タスク
-- 明日の優先候補
-
-毎週金曜に送る内容。
-
-- 今週の達成率
-- 未達目標
-- 来週へ持ち越すタスク
-- 改善提案
-
 ### FR-009 Custom GPT連携
 
 ChatGPTの画面から以下を依頼できる。
@@ -197,7 +154,25 @@ Telegramに進捗を送って
 遅れているタスクを整理して
 ```
 
-FastAPIの外部APIをCustom GPT Actionsから呼び出す。
+### FR-010 10年ロードマップ逆算
+
+- `data/roadmap_targets_10yr.json` を基準データとして読む
+- 現在地から次の年末目標までを日数按分する
+- 今週、来週、再来週、4週間後の金曜日目標を生成する
+- Obsidianの金曜日Daily Noteへ `AI_ROADMAP_TARGETS` markerで書き込む
+- 月次サマリーを `AI-CRM/roadmap/YYYY-MM-weekly-targets.md` に保存する
+
+### FR-011 CLI AIレビュー
+
+- API直叩きではなく、ローカルのCodex CLI / Claude CLIを呼び出せる
+- `--review-command` または `ROADMAP_REVIEW_COMMANDS` でCLIコマンドを指定する
+- CLIレビュー結果をObsidianの生成欄に追記できる
+
+### FR-012 CI/CDと修正ループ
+
+- GitHub Actions CIでcompile、スモークテスト、pytest、roadmap CLIテストを実行する
+- CD SmokeでDocker buildとAPI health checkを行う
+- CIが失敗した場合に備え、ローカルCLI修正ループ `scripts/ci_repair_loop.sh` を提供する
 
 ## 5. 非機能要件
 
@@ -213,18 +188,14 @@ FastAPIの外部APIをCustom GPT Actionsから呼び出す。
 - なぜその分類になったか理由を保存する
 - どのエージェントへ渡したかを保存する
 - どのタスクがどのCalendarイベントになったか追跡する
+- ロードマップ週次目標は、どの長期目標区間から逆算したかを保存する
 
 ### NFR-003 ローカルファースト
 
 - Obsidian Markdownを正本とする
 - DBは補助的にする
 - Git管理できる構造にする
-
-### NFR-004 拡張性
-
-- エージェント種別を追加できる
-- Codex / Claude Code / 手動実行を切り替えられる
-- Telegram以外の通知先も追加できる
+- AIレビューはAPI直呼びではなく、ローカルCLIを差し替え可能にする
 
 ## 6. 推奨Vault構成
 
@@ -232,97 +203,56 @@ FastAPIの外部APIをCustom GPT Actionsから呼び出す。
 ObsidianVault/
   Inbox.md
   Daily/
-    2026-05-13.md
+    2026-05-15.md
   Weekly/
     2026-W20.md
   AI-CRM/
+    roadmap/
+      2026-05-weekly-targets.md
     agent_outbox/
-      development/
-      research/
-      writing/
-      communication/
-      admin/
     agent_results/
     logs/
     backups/
 ```
 
-## 7. ステータス定義
+## 7. MVPの順番
 
-| ステータス | 意味 |
-|---|---|
-| inbox | 未分類 |
-| classified | 分類済み |
-| assigned | エージェント割当済み |
-| wbs_created | WBS化済み |
-| scheduled | カレンダー登録済み |
-| in_progress | 進行中 |
-| blocked | 停止中 |
-| done | 完了 |
-| archived | アーカイブ済み |
+1. 10年ロードマップ逆算CLI
+2. Markdown安全更新
+3. Inbox Reader
+4. 分類ルールベース版
+5. Agent Outbox生成
+6. Weekly Goal Reader
+7. WBS Generator
+8. Progress Calculator
+9. Telegram Digest
+10. Google Calendar Scheduler
+11. Custom GPT Actions
+12. Codex / Claude Code Adapter
 
-## 8. MVPの順番
+## 8. 受け入れ条件
 
-### MVP-1 Inbox分類
+### AC-001 Roadmap CLI
 
-- Inboxを読む
-- タスクを分類する
-- agent_outboxに依頼書を作る
+`python -m obsidian_calendar_agent.cli roadmap-weekly --start-date 2026-05-11 --weeks 4 --json` を実行すると、4つの金曜日目標がJSONで出力される。
 
-### MVP-2 WBS生成
+### AC-002 Obsidian書き込み
 
-- Weekly Goalを読む
-- WBSへ分解する
-- AI管理欄へ保存する
+`--write` を付けると、各金曜日Daily Noteと月次サマリーが作られる。
 
-### MVP-3 進捗更新
-
-- WBSのチェック状態を読む
-- 親目標ごとの進捗率を計算する
-- Daily / Weekly Noteへ反映する
-
-### MVP-4 Telegram秘書レポート
-
-- 今日やるべきこと
-- 週次進捗
-- 遅延リスク
-- 秘書コメント
-
-を送信する。
-
-### MVP-5 Google Calendar連携
-
-- 未完了タスクを1時間単位で登録する
-
-### MVP-6 Custom GPT連携
-
-- ChatGPTの画面からAPIを呼び出せるようにする
-
-## 9. 受け入れ条件
-
-### AC-001 Inbox分類
-
-Inboxに未処理メモがある状態で実行すると、分類され、適切なagent_outboxに依頼書が生成される。
-
-### AC-002 WBS生成
-
-Weekly Goalに大きな目標がある状態で実行すると、複数の実行可能タスクに分解される。
-
-### AC-003 進捗更新
-
-WBSに完了済みと未完了のタスクが混在する状態で実行すると、進捗率が正しく更新される。
-
-### AC-004 安全更新
+### AC-003 安全更新
 
 Daily Noteにユーザーの自由記述がある状態で実行しても、marker外の文章は変更されない。
 
-### AC-005 Telegram配信
+### AC-004 CI
 
-今日の予定と週次進捗がある状態で実行すると、秘書レポート文面が生成される。
+GitHub Actions CIがcompile、スモークテスト、pytest、roadmap CLIテストを通す。
 
-## 10. 未決定事項
+### AC-005 CD Smoke
 
-ユーザー確認が必要なもの。
+GitHub Actions CD SmokeがDocker imageをbuildし、`/health` の応答を確認する。
+
+## 9. 未決定事項
 
 1. Inboxは `Inbox.md` か `Inbox/` フォルダか
 2. Daily Noteのフォルダ名
@@ -332,3 +262,5 @@ Daily Noteにユーザーの自由記述がある状態で実行しても、mark
 6. 自動でCalendar登録してよい時間帯
 7. Telegram配信時間
 8. Codex / Claude Codeへの連携を、依頼書生成だけにするか、自動実行まで進めるか
+9. ロードマップの実績値をどのファイル・見出しに書くか
+10. ロードマップ数値の再計算を毎週何曜日・何時に行うか
