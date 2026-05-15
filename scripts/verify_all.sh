@@ -13,3 +13,17 @@ assert len(payload['weekly_targets']) == 4
 assert payload['weekly_targets'][0]['target_date'] == '2026-05-15'
 print('roadmap-weekly CLI smoke ok')
 PY
+python - <<'PY'
+from pathlib import Path
+root = Path.cwd()
+required = [
+    root / 'CLAUDE.md',
+    root / '.claude' / 'commands' / 'verify.md',
+    root / '.claude' / 'commands' / 'fix-ci.md',
+    root / '.claude' / 'commands' / 'roadmap-weekly.md',
+    root / '.claude' / 'commands' / 'docker-smoke.md',
+]
+missing = [str(path) for path in required if not path.exists()]
+assert not missing, missing
+print('claude-code support files ok')
+PY
