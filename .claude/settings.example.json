@@ -1,0 +1,7 @@
+{
+  "description": "Example Claude Code project settings. Copy to .claude/settings.json only after reviewing locally.",
+  "statusLine": {
+    "type": "command",
+    "command": "python - <<'PY'\nfrom pathlib import Path\nprint('obsidian-calendar-agent | run: bash scripts/verify_all.sh')\nPY"
+  }
+}
